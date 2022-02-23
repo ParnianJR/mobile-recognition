@@ -1,0 +1,129 @@
+library(ggplot2)
+library(dplyr)
+library(ggrepel)
+dat = readRDS("mobile_data.rds")
+#View(dat)
+dat1 = dat %>%
+  filter(sim_no > 0) %>%
+  filter(display_size > 2.4) %>%
+  filter(display_size < 6.5) %>%
+  group_by(company) %>%
+  summarise(count =n()) %>%
+  arrange(desc(count)) %>%
+  slice(1:20) 
+#View(dat1)
+#as you can see,sumsung is the biggest producer
+ggplot(dat1,
+       aes(x= reorder(company,count), 
+           y=count)) +
+  coord_flip() +
+  geom_bar(stat = "identity",fill="purple") +
+  ggtitle("top 20 companies based on number of produced phones")
+###
+stat3 <-  dat %>%
+  filter(sim_no >0) %>%
+  filter(!is.na(price)) %>%
+  filter(display_size > 2.4) %>%
+  filter(display_size < 6.5) %>%
+  group_by(sim_no) %>%
+  mutate(ave_price = mean(price)) %>%
+  arrange(sim_no)
+ggplot(data =stat3,
+       aes(x =sim_no,
+           y = ave_price)) +
+  geom_bar(stat = "identity",aes(fill = LTE),
+           position = "fill") +
+  ggtitle("Average price of phones based on the number of SIM cards and accessibility
+to LTE")
+###
+statt <-  dat %>%
+  filter(sim_no > 0) %>%
+  filter(display_size > 2.4) %>%
+  filter(display_size < 6.5) %>%
+  filter(year== 2017) %>%
+  filter(! is.na(dim_thickness))
+ggplot(data = statt,
+       aes(audio_jack, dim_thickness)) +
+  geom_boxplot(fill=c("gold","darkturquoise")) +
+  ggtitle("Thickness of phones year 2017 based on having audio_jack")
+###
+staa <- dat %>%
+  filter(sim_no >0) %>%
+  filter(display_size > 2.4) %>% #remove smart whatches
+  filter(display_size < 6.5) %>% # remove tablets
+  filter(!is.na(px_row)) %>%
+  filter(!is.na(px_col)) %>%
+  mutate(ppi = sqrt(px_row^2 + px_col^2)/display_size) %>%
+  arrange(ppi)
+ggplot(data = staa,
+       aes(x = ppi)) + 
+  geom_histogram(binwidth = 10,
+                 linetype = "dashed",
+                 color="black",
+                 fill="red") +
+  ggtitle("Histogram of phones based on ppi")
+###
+sta <- dat %>%
+  filter(sim_no >0) %>%
+  filter(display_size > 2.4) %>% #remove smart whatches
+  filter(display_size < 6.5) %>% # remove tablets
+  filter(!is.na(px_row)) %>%
+  filter(!is.na(px_col)) %>%
+  filter(! is.na(year)) %>%
+  group_by(year) %>%
+  mutate(ppi = sqrt(px_row^2 + px_col^2) / display_size) %>%
+  summarise(ave_ppi = mean(ppi)) %>%
+  arrange(year) 
+ggplot(data = sta,
+       aes( x= year,
+            y = ave_ppi)) +
+  geom_line()+geom_point() +
+  ggtitle("Annual chart for average ppi")
+###
+staaa <- dat %>%
+  filter(sim_no >0) %>%
+  filter(display_size > 2.4) %>% #remove smart whatches
+  filter(display_size < 6.5) %>% # remove tablets
+  filter(!is.na(px_row)) %>%
+  filter(!is.na(px_col)) %>%
+  group_by(device) %>%
+  summarise(ppi = sqrt(px_row ^2 + px_col^2) / display_size) %>%
+  arrange(desc(ppi)) %>%
+  head(10)
+ggplot(data = staaa,
+       aes(x = reorder(device,ppi),
+           y = ppi)) +
+  coord_flip() +
+  geom_bar(stat = "identity",fill="magenta") +
+  ggtitle("first 10 phones with maximum ppi")
+###
+st <-  dat %>%
+  filter(! grepl('Tablet',dat$device)) %>%
+  filter(sim_no >0) %>% #all mobiles at least have 1 sim_card
+  filter(display_size > 2.4) %>% #filter smart watches
+  filter(display_size < 6.5) %>% #filter tablets
+  group_by(device) %>%
+  summarise(sturdiness = weight / dim_length * dim_breadth) %>%
+  arrange(desc(sturdiness)) %>%
+  head(10)
+ggplot(data = st,
+       aes(x = reorder(device,sturdiness), 
+           y = sturdiness)) +
+  coord_flip() +
+  geom_bar(stat = "identity",fill="deeppink") +
+  ggtitle("10 sturdiest phones")
+###
+st <-  dat %>%
+  filter(! grepl('Tablet',dat$device)) %>%
+  filter(sim_no >0) %>%
+  filter(display_size >2.4) %>% #smart watch
+  filter(display_size > 6.5) %>% #tablet
+  filter(!is.na(battery_mah)) %>%
+  filter(!is.na(weight))
+ggplot(st,
+       aes(x = weight , y = battery_mah)) +
+  geom_point(color = 'red') +
+  ggtitle("distribution of battrty_mah and weight")
+###
+correlation <- cor(st$weight,st$battery_mah,method = 'pearson')
+correlation
