@@ -5,3 +5,4 @@ Doing some analysis on mobile_data dataset using **dplyr** and **ggplot2**:
 - Thickness of phones year 2017 based on having audio_jack.
 - Some analysis based on **ppi**.
 - Finding 10 **sturdiest** phones.
+- Correlation between **battery_mah** and **weight**.
